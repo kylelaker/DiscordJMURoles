@@ -1,26 +1,19 @@
-if __name__ == "__main__":
-    import dependencies
-
-    dependencies.install()  # attempt to install any missing dependencies
-
-import asyncio
 import datetime
 import logging
 import os
-import random
-import re
-import requests
 import sys
 import traceback
 
 import discord
 from discord.ext import commands
 
-import secret
-import self_updater
-import util
-from bot_help import StraightforwardHelp
-from commands import all_commands
+from lazybot import (
+    config,
+    self_updater,
+    util
+)
+from lazybot.bot_help import StraightforwardHelp
+from lazybot.commands import all_commands
 
 # set up logger
 log_filename = "discord.log"
@@ -38,7 +31,6 @@ logger.addHandler(handler)
 ### Constants ###
 #################
 
-RESTART_MSG = "restarting..."
 DEFAULT_COMMAND_PREFIX = "!"
 
 # set up bot
@@ -74,7 +66,7 @@ async def on_ready():
         last_minute = datetime.datetime.now() - datetime.timedelta(minutes=1)
 
         def delete_check(msg: discord.Message) -> bool:
-            return msg.author == bot.user and msg.content.lower() == RESTART_MSG.lower()
+            return msg.author == bot.user and msg.content.lower() == self_updater.RESTART_MSG.lower()
 
         await util.purge_in_all(bot, since=last_minute, check=delete_check)
 
@@ -115,28 +107,14 @@ async def on_member_join(member):
 ### Commands ###
 ################
 
+bot.add_cog(self_updater.UpdateChecker(bot))
 for command in all_commands():
     bot.add_cog(command(bot))
 
-update_checker = self_updater.UpdateChecker(bot)
-bot.add_cog(update_checker)
 
+print()
+print("connecting...")
+bot.run(config.secret_token())
 
-@bot.command(aliases=["restart"])
-async def update(ctx):
-    """ Checks for updates from git, and restarts bot. """
-    self_updater.check_for_updates()  # update checker probably already updated, but just make sure
-    await update_checker.clear_update_messages()
-    await ctx.send(RESTART_MSG)
-    await ctx.message.delete()
-    print("update started. stopping event loop...")
-    raise KeyboardInterrupt()  # kill program (gets caught by discord lib)
-
-
-if __name__ == "__main__":
-    print()
-    print("connecting...")
-    bot.run(secret.botToken)
-
-    # finally, after event loop terminated
-    self_updater.restart(logger)
+# finally, after event loop terminated
+self_updater.restart(logger)

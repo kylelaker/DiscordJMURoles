@@ -4,6 +4,7 @@ import datetime
 from typing import Callable, Union
 
 import discord
+from discord.ext.commands import Bot
 
 
 def all_empty_roles(guild: discord.Guild) -> iter:
@@ -14,7 +15,7 @@ def all_empty_roles(guild: discord.Guild) -> iter:
 
 
 async def all_my_messages_since(
-    bot: discord.ext.commands.Bot,
+    bot: Bot,
     since: Union[discord.abc.Snowflake, datetime.datetime],
 ):
     """ An asyncronous iterable over all messages from the bot since the given time. """

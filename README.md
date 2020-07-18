@@ -6,8 +6,9 @@ A Discord bot for helping change roles in JMU Grad Discord
 1. Git
 
 ### Running
-1. Copy secret_example.py and make a new file called secret.py with your discord bot token
-1. Run bot.py
+1. Install the bot by running `pip install -e .`
+1. Create a configuration file, named `config.yml`. See `sample_config.yml` for an example.
+1. Run `python -m lazybot.py`
 
 ## Developers
 ### Creating Commands

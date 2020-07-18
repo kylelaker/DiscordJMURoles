@@ -5,7 +5,7 @@ import re
 import discord
 from discord.ext import commands
 
-from util import all_empty_roles
+from lazybot.util import all_empty_roles
 
 
 class CommandGradYear(commands.Cog):

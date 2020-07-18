@@ -1,3 +1,7 @@
+"""
+Tools for restarting the bot.
+"""
+
 import os
 import sys
 import time
@@ -6,7 +10,10 @@ import discord
 import git
 from discord.ext import commands, tasks
 
-from util import say_in_all
+from lazybot.config import is_bot_owner
+from lazybot.util import say_in_all
+
+RESTART_MSG = "restarting..."
 
 
 def check_for_updates() -> bool:
@@ -66,6 +73,22 @@ class UpdateChecker(commands.Cog):
     def cog_unload(self):
         self.update_reminder.cancel()
         self.update_check.cancel()
+
+    @commands.command(aliases=["restart"])
+    @commands.check(is_bot_owner)
+    async def update(self, ctx):
+        """ Checks for updates from git, and restarts bot. [OWNERS ONLY]"""
+        check_for_updates()  # update checker probably already updated, but just make sure
+        await self.clear_update_messages()
+        await ctx.send(RESTART_MSG)
+        await ctx.message.delete()
+        print("update started. stopping event loop...")
+        raise KeyboardInterrupt()  # kill program (gets caught by discord lib)
+
+    @update.error
+    async def update_error(self, ctx, error):
+        if isinstance(error, commands.NotOwner):
+            await ctx.send("Only owners can update me!")
 
     async def clear_update_messages(self):
         """ Clears all remembered update messages. """

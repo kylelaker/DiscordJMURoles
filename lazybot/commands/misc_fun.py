@@ -1,7 +1,7 @@
 """ File pertaining to miscellaneous fun commands. """
 
 import random
-import requests
+import aiohttp
 
 from discord.ext import commands
 
@@ -17,10 +17,11 @@ class MiscFun(commands.Cog):
         """ Want to know some interesting Chuck Norris facts? """
         joke_msg = "{joke}"
 
-        chuckPull = requests.get("http://api.icndb.com/jokes/random")
-        if chuckPull and chuckPull.status_code == 200:
-            joke = chuckPull.json()["value"]["joke"]
-            await ctx.send(joke_msg.format(joke=joke))
+        async with aiohttp.ClientSession() as session:
+            async with session.get("http://api.icndb.com/jokes/random") as response:
+                if response.status < 400:
+                    joke = response.json()["value"]["joke"]
+                    await ctx.send(joke_msg.format(joke=joke))
 
     @commands.command(name="8ball")
     async def eight_ball(self, ctx, *, message: str):
